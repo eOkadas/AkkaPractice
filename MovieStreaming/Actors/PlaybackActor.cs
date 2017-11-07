@@ -1,24 +1,25 @@
 ﻿namespace MovieStreaming.Actors
 {
     using System;
+    using System.Runtime.CompilerServices;
     using Akka.Actor;
     using MovieStreaming.Messages;
 
-    public class PlaybackActor : UntypedActor
+    public class PlaybackActor : ReceiveActor
     {
-        public PlaybackActor() => Console.WriteLine("Creating PlaybackActor");
-
-        protected override void OnReceive(object message)
+        public PlaybackActor()
         {
-            if (message is PlayMovieMessage playMovieMessage)
+            Console.WriteLine("Creating PlaybackActor");
+            
+            Receive<PlayMovieMessage>(message => HandlePlayMovieMessage(message), userIdPredicate);
+
+            void HandlePlayMovieMessage(PlayMovieMessage message)
             {
-                Console.WriteLine($"Receive movie title {playMovieMessage.MovieTitle}");
-                Console.WriteLine($"Receive user ID {playMovieMessage.UserId}");
+                Console.WriteLine($"Receive movie title {message.MovieTitle}");
+                Console.WriteLine($"Receive user ID {message.UserId}");
             }
-            else
-            {
-                Unhandled(message);
-            }
+
+            bool userIdPredicate(PlayMovieMessage message) => message.UserId == 42;
         }
     }
 }
