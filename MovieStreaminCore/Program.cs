@@ -22,6 +22,8 @@
             playbackActorRef.Tell(new PlayMovieMessage("Boolean Lies", 77));
             playbackActorRef.Tell(new PlayMovieMessage("Codenan the Destroyer", 1));
 
+            playbackActorRef.Tell(PoisonPill.Instance);
+
             Console.ReadKey();
             
             _movieStreaminActorSystem.Terminate();
