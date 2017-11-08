@@ -1,37 +1,53 @@
-﻿namespace MovieStreaming
+﻿using System;
+using Akka.Actor;
+using MovieStreaming.Actors;
+using MovieStreaming.Messages;
+
+namespace MovieStreaming
 {
-    using System;
-    using Akka.Actor;
-    using MovieStreaming.Actors;
-    using MovieStreaming.Messages;
-
-    class Program
+    internal class Program
     {
-        private static ActorSystem _movieStreaminActorSystem;
+        private static ActorSystem MovieStreamingActorSystem;
 
-        static void Main()
+        private static void Main(string[] args)
         {
-            _movieStreaminActorSystem = ActorSystem.Create("MovieStreaminActorSystem");
+            MovieStreamingActorSystem = ActorSystem.Create("MovieStreamingActorSystem");
             Console.WriteLine("Actor system created");
 
-            var playbackActorProps = Props.Create<PlaybackActor>();
-            var playbackActorRef = _movieStreaminActorSystem.ActorOf(playbackActorProps, "PlaybackActor");
-            
-            playbackActorRef.Tell(new PlayMovieMessage("Akka.NET: The Movie", 42));
-            playbackActorRef.Tell(new PlayMovieMessage("Partial Recall", 99));
-            playbackActorRef.Tell(new PlayMovieMessage("Boolean Lies", 77));
-            playbackActorRef.Tell(new PlayMovieMessage("Codenan the Destroyer", 1));
+            Props userActorProps = Props.Create<UserActor>();
+            IActorRef userActorRef = MovieStreamingActorSystem.ActorOf(userActorProps, "UserActor");
 
-            playbackActorRef.Tell(PoisonPill.Instance);
 
             Console.ReadKey();
-            
-            _movieStreaminActorSystem.Terminate();
+            Console.WriteLine("Sending a PlayMovieMessage (Codenan the Destroyer)");
+            userActorRef.Tell(new PlayMovieMessage("Codenan the Destroyer", 42));
 
-            _movieStreaminActorSystem.WhenTerminated.Wait();
+            Console.ReadKey();
+            Console.WriteLine("Sending another PlayMovieMessage (Boolean Lies)");
+            userActorRef.Tell(new PlayMovieMessage("Boolean Lies", 42));
 
-            Console.WriteLine();
+            Console.ReadKey();
+            Console.WriteLine("Sending a StopMovieMessage");
+            userActorRef.Tell(new StopMovieMessage());
 
+            Console.ReadKey();
+            Console.WriteLine("Sending another StopMovieMessage");
+            userActorRef.Tell(new StopMovieMessage());
+
+
+
+            // press any key to start shutdown of system
+            Console.ReadKey();
+
+
+            // Tell actor system (and all child actors) to shutdown
+            MovieStreamingActorSystem.Terminate();
+            // Wait for actor system to finish shutting down
+            MovieStreamingActorSystem.WhenTerminated.Wait();
+            Console.WriteLine("Actor system shutdown");
+
+
+            // Press any key to stop console application
             Console.ReadKey();
         }
     }
